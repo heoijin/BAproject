@@ -49,40 +49,19 @@ WHERE b.f_time is NOT NULL
 ) c
 GROUP BY c.y_m,c.m_diff;
 
--- 步骤五：计算留存率
+-- 步骤五：计算留存率（基础版）
 SELECT c.`首付月份`,CONCAT(ROUND((c.`留存量`/m.`留存量`)*100,2),"%") 留存率
 FROM cohort c
 LEFT JOIN (
-SELECT 首付月份,留存量
-FROM cohort
-where `月份差`=0
+	SELECT 首付月份,留存量
+	FROM cohort
+	where `月份差`=0
 ) m 
 on c.`首付月份`=m.`首付月份`;
 
 
 
--- 求留存率，并改变表格样式
-SELECT a.`首付月份`,
-CASE a.`月份差` when 0 THEN a.`留存率` ELSE 0 END 首月,
-CASE a.`月份差` when 1 THEN a.`留存率` ELSE 0 END "+1月",
-CASE a.`月份差` when 2 THEN a.`留存率` ELSE 0 END "+2月",
-CASE a.`月份差` when 3 THEN a.`留存率` ELSE 0 END "+3月",
-CASE a.`月份差` when 4 THEN a.`留存率` ELSE 0 END "+4月",
-CASE a.`月份差` when 5 THEN a.`留存率` ELSE 0 END "+5月"
-FROM(
-SELECT a.`首付月份`,a.`月份差`,ROUND((a.`留存量`/b.`留存量`)*100,2) 留存率
-FROM cohort a
-LEFT JOIN (
-	SELECT `首付月份`,`留存量`
-	FROM cohort
-	WHERE cohort.`月份差`=0
-) b
-on a.`首付月份`=b.`首付月份`
-) a
-
-
-
--- 计算留存率，优化展示样式
+-- 步骤五：计算留存率（进阶版）
 SELECT 
 	n.`首付月份`,
 	CONCAT(sum(n.`首月`),"%") 首月,
