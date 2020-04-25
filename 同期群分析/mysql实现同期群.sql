@@ -22,10 +22,10 @@ LEFT JOIN (
 	SELECT c_id,min(paytime) f_time
 	FROM sheet2
 	GROUP BY c_id
--- 	LIMIT测试时用，为了提升效率
+	#	LIMIT测试时用，为了提升效率
 	LIMIT 0,7000
 ) b on a.c_id=b.c_id
--- 同样是为了提升效率而使用
+# 同样是为了提升效率而使用
 WHERE b.f_time is NOT NULL;
 
 
@@ -44,7 +44,7 @@ LEFT JOIN (
 	FROM sheet2
 	GROUP BY c_id
 ) b on a.c_id=b.c_id
--- 为了提升效率而使用
+# 为了提升效率而使用
 WHERE b.f_time is NOT NULL
 ) c
 GROUP BY c.y_m,c.m_diff;
@@ -60,11 +60,10 @@ LEFT JOIN (
 on c.`首付月份`=m.`首付月份`;
 
 
-
 -- 步骤五：计算留存率（进阶版）
 SELECT 
 	n.`首付月份`,
-	CONCAT(sum(n.`首月`),"%") 首月,
+	AVG(n.`留存量`) "本月新增",
 	CONCAT(sum(n.`+1月`),"%") "+1月",
 	CONCAT(sum(n.`+2月`),"%") "+2月",
 	CONCAT(sum(n.`+3月`),"%") "+3月",
@@ -74,7 +73,7 @@ FROM(
 	# 一级子查询：转置表格，将月份差作为列名
 	SELECT 
 		a.`首付月份`,
-		CASE a.`月份差` when 0 THEN a.`留存率` ELSE 0 END 首月,
+		a.`留存量`,
 		CASE a.`月份差` when 1 THEN a.`留存率` ELSE 0 END "+1月",
 		CASE a.`月份差` when 2 THEN a.`留存率` ELSE 0 END "+2月",
 		CASE a.`月份差` when 3 THEN a.`留存率` ELSE 0 END "+3月",
@@ -82,7 +81,7 @@ FROM(
 		CASE a.`月份差` when 5 THEN a.`留存率` ELSE 0 END "+5月"
 	FROM(
 		# 二级子查询：计算留存率
-		SELECT a.`首付月份`,a.`月份差`,ROUND((a.`留存量`/b.`留存量`)*100,2) 留存率
+		SELECT a.`首付月份`,b.`留存量`,a.`月份差`,ROUND((a.`留存量`/b.`留存量`)*100,2) 留存率
 		FROM cohort a
 		LEFT JOIN (
 			# 三级子查询：查询首月用户量

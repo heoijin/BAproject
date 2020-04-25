@@ -23,14 +23,16 @@ def Cohort_Analysis(df):
     # 对复合索引的series转置为dataframe
     df_f = df_f.unstack()
 
+    # 将首月客户数量对齐
     for i in range(len(df_f.index)):
         df_f.iloc[i] = df_f.iloc[i].shift(periods=-i)
 
     # 重置columns
-    df_f.columns = ['首月', '+1月', '+2月', '+3月', '+4月', '+5月']
+    df_f.columns = ['本月新增', '+1月', '+2月', '+3月', '+4月', '+5月']
 
     # 计算留存率
-    df_1 = df_f.apply(count_per, axis=0, args=(df_f['首月'],))
+    df_1 = df_f.apply(count_per, axis=0, args=(df_f['本月新增'],))
+    df_1['本月新增']=df_f['本月新增']
 
     print(df_f)
     print('-' * 15)
@@ -38,7 +40,8 @@ def Cohort_Analysis(df):
 
 
 def count_per(s, dx):
-    return round((s / dx) * 100, 2)
+    a=[f'{i}%' if str(i)!='nan' else 0 for i in round((s / dx) * 100, 2)]
+    return a
 
 
 def main():
