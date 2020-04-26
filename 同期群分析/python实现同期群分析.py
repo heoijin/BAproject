@@ -17,10 +17,10 @@ def Cohort_Analysis(df):
     # 合并新的dataframe，包含客户昵称，付款时间，首单时间
     df_f = df[['客户昵称', '付款时间']].merge(df_f)
 
-    # 通过首单时间及付款时间进行分组，获得每个时间段单独的不重复的客户数量
+    # 通过首单时间及付款时间进行分组，获得每个时间段的不重复客户数量
     df_f = df_f.groupby(by=[pd.Grouper(key='首单时间', freq='m'), pd.Grouper(key='付款时间', freq='m')])['客户昵称'].nunique()
 
-    # 对复合索引的series转置为dataframe
+    # 将复合索引的series转置为dataframe
     df_f = df_f.unstack()
 
     # 将首月客户数量对齐
