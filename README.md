@@ -8,5 +8,5 @@
 
 ## 计算留存率难实现？有手就能行
 - 项目文件：同期群分析
-- 文章链接：
+- 文章链接：https://blog.csdn.net/weixin_40679090/article/details/105800023
 - 数据集来源：https://mp.weixin.qq.com/s/XA6uHqssZI18GGz8dMO9Ew
