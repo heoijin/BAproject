@@ -10,3 +10,8 @@
 - 项目文件：同期群分析
 - 文章链接：https://blog.csdn.net/weixin_40679090/article/details/105800023
 - 数据集来源：https://mp.weixin.qq.com/s/XA6uHqssZI18GGz8dMO9Ew
+
+## 真实电商数据实战，详解多维度分析
+- 项目文件：天猫真实订单
+- 文章链接：
+- 数据集来源：https://www.kesci.com/home/project/5eb60fd0366f4d002d7792d5/fork
