@@ -19,6 +19,28 @@ def open_file():
     df['订单创建时间']=pd.to_datetime(df['订单创建时间'])
     df['订单付款时间']=pd.to_datetime(df['订单付款时间'])
     return df
+
+def totle_sales_amount(df):
+    '''
+    计算每日销售额情况
+    :param df:
+    :return:
+    '''
+    df_=df.groupby(pd.Grouper(key='订单付款时间',freq='D'))['买家实际支付金额'].sum()
+    _x=[f'{m}月{d}日' for m,d in zip(df_.index.month, df_.index.day)]
+    plt.figure(figsize=(16,9),dpi=160)
+    plt.plot(range(len(_x)), df_)
+    plt.text(0,df_.max(),f'2月总销售额情况为{round(df_.sum(),2)}元',fontsize=20)
+    for x,y in zip(range(len(_x)),df_.values):
+         plt.text(x, y+7000,int(y),ha='center')
+    plt.xticks(range(len(_x)),_x,rotation=45)
+    plt.ylabel('销售额')
+    plt.xlabel('日期')
+    plt.title('销售额每日走势',fontsize=25)
+    plt.savefig('销售额每日走势.jpg')
+    plt.show()
+
+
 def sales(df):
     '''
     按订单付款时间，统计实际成交数量
@@ -35,7 +57,7 @@ def sales(df):
     plt.figure(figsize=(16,9),dpi=160)
     plt.plot(range(len(_x)),sell_amount['实际成交数'])
     # 设置数据文本标签
-    plt.text(0,sell_amount['实际成交数'].max(),f'2月1日-3月1日实际成交订单数为:{sell_amount.sum().values[0]}')
+    plt.text(0,sell_amount['实际成交数'].max(),f'2月1日-3月1日实际成交订单数为:{sell_amount.sum().values[0]}',fontsize=20)
     for x,y in zip(range(len(_x)),sell_amount['实际成交数']):
         plt.text(x, y+15,y,ha='center')
     plt.xticks(range(len(_x)),_x,rotation=45)
@@ -154,6 +176,9 @@ def location_rates(df):
 
 def main_func():
     df=open_file()
+    
+    # 统计日维度下的总销售额情况
+    # totle_sales_amount(df)
 
     # 时间维度下的销量情况
     # sales(df)
@@ -162,13 +187,13 @@ def main_func():
     # Conversion_rates(df)
 
     # 热卖商品
-    # hot_sales(df)
+    hot_sales(df)
 
     # 城市分布情况
     # location_distribution(df)
 
     # 细分维度下的转化率情况
-    location_rates(df)
+    # location_rates(df)
 
 if __name__ == '__main__':
     main_func()
