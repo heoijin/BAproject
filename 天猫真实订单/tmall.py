@@ -155,21 +155,39 @@ def location_rates(df):
     # 找到所有实际成交或全额成交的所有行
     df['成交情况']=0
     df.loc[df[df['买家实际支付金额']>0].index.to_list(),'成交情况']=1
-    df.loc[df[df['买家实际支付金额']==df['总金额']].index.to_list(),'全价成交']=1
 
     # 分组求和
     df_=df.groupby(by=['收货地址',pd.Grouper(key='订单付款时间',freq='W')]).agg(
         订单创建数=('订单创建时间', 'count'),
         订单成交数=('成交情况', 'sum')
     )
-    df_head3=df_.loc[['上海','广东省','北京','江苏省','浙江省']]
-    # 求转化率
-    df_head3['实际成交转化率']=df_head3['订单成交数']/df_head3['订单创建数']
+    # 计算整体转化率情况
+    df_t=df_['订单成交数'].unstack().sum()/df_['订单创建数'].unstack().sum()
+    df_=df_.loc[['上海','广东省','北京','江苏省','浙江省']]
     print(f'{"-" * 15}销量前5的省市订单创建量量情况{"-" * 15}\n')
-    print(df_head3['订单创建数'].unstack())
+    print(df_['订单创建数'].unstack())
+    # 求转化率
+    df_['实际成交转化率']=df_['订单成交数']/df_['订单创建数']
+    print(f'{"-" * 15}整体转化率情况{"-" * 15}\n')
+    print(df_t)
     print(f'\n{"-" * 15}销量前5的省市的转化率情况{"-" * 15}\n')
-    print(df_head3['实际成交转化率'].unstack())
+    print(df_['实际成交转化率'].unstack())
 
+def location_product_rates(df):
+    df=df[(df['收货地址'].isin(['北京','上海','广东省']))&(df['订单创建时间']>'2020-02-16')]
+    df['成交情况']=0
+    df.loc[df[df['买家实际支付金额']>0].index.to_list(),'成交情况']=1
+    df_=df.groupby(by=['收货地址','总金额']).agg(
+        订单创建数=('订单创建时间', 'count'),
+        订单成交数=('成交情况', 'sum')
+    )
+    # 筛选每个省市的销量前5
+    df_=df_.reset_index().groupby('收货地址').apply(lambda x: x.nlargest(5,'订单创建数',keep='all')).set_index(['收货地址','总金额'])
+    df_['实际成交转化率']=df_['订单成交数']/df_['订单创建数']
+    print(f'{"-" * 15}重点省市销量前5产品的订单创建量量情况{"-" * 15}\n')
+    print(df_['订单创建数'].unstack())
+    print(f'\n{"-" * 15}重点省市销量前5产品的转化率情况{"-" * 15}\n')
+    print(df_['实际成交转化率'].unstack())
 
 def main_func():
     df=open_file()
@@ -190,7 +208,10 @@ def main_func():
     # location_distribution(df)
 
     # 细分维度下的转化率情况
-    location_rates(df)
+    # location_rates(df)
+
+    # 多维度交叉分析：地理位置：北上广，时间：2月17-3月1日，销量前4产品
+    location_product_rates(df)
 
 if __name__ == '__main__':
     main_func()
