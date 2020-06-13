@@ -182,12 +182,16 @@ def location_product_rates(df):
         订单成交数=('成交情况', 'sum')
     )
     # 筛选每个省市的销量前5
-    df_=df_.reset_index().groupby('收货地址').apply(lambda x: x.nlargest(5,'订单创建数',keep='all')).set_index(['收货地址','总金额'])
-    df_['实际成交转化率']=df_['订单成交数']/df_['订单创建数']
-    print(f'{"-" * 15}重点省市销量前5产品的订单创建量量情况{"-" * 15}\n')
-    print(df_['订单创建数'].unstack())
-    print(f'\n{"-" * 15}重点省市销量前5产品的转化率情况{"-" * 15}\n')
-    print(df_['实际成交转化率'].unstack())
+    df1=df_.reset_index().groupby('收货地址').apply(lambda x: x.nlargest(5,'订单创建数',keep='all')).set_index(['收货地址','总金额'])
+    a=df1['订单成交数'].unstack()
+    a.loc['上海',[21,53]]=df_.loc['上海'].loc[[21,53]]['订单成交数']
+
+    b=df1['订单创建数'].unstack()
+    b.loc['上海',[21,53]]=df_.loc['上海'].loc[[21,53]]['订单创建数']
+    print(f'{"-" * 15}重点省市销量前3产品的订单创建量量情况{"-" * 15}\n')
+    print(b)
+    print(f'\n{"-" * 15}重点省市销量前3产品的转化率情况{"-" * 15}\n')
+    print(a/b)
 
 def main_func():
     df=open_file()
