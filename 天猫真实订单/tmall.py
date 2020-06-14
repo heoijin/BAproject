@@ -42,6 +42,37 @@ def totle_sales_amount(df):
     plt.savefig('销售额每日走势.jpg')
     plt.show()
 
+def Conversion_rates(df):
+    '''
+    目标：订单每个环节的转化转化率
+    :param df:
+    :return:
+    '''
+    rates = pd.Series({
+        '创建':df['订单创建时间'].count(),
+        '付款':df['订单付款时间'].count(),
+        '实际成交':df[df['买家实际支付金额']>0].shape[0],
+        '全额成交':df[df['买家实际支付金额']==df['总金额']].shape[0],
+    },name='订单量').to_frame()
+    # 绝对转化率=各环节订单数/订单创建数
+    rates['整体转化率']=rates['订单量'].apply(lambda x: round(x*100/rates.iloc[0,0],3))
+    # 相对转化率=各项指标/上一个流程的指标
+    # rates['相对转化率']=(rates/rates.shift())['订单量'].fillna(1)
+    print(f'\n{"-"*5}各环节绝对转化率(%){"-"*5}\n')
+    print(rates)
+
+    c=(
+        Funnel()
+        .add(
+            '转化率',
+            [list(z) for z in zip(rates.index,rates['整体转化率'])],
+            # 设置标签位置及数据展现形式
+            label_opts=opts.LabelOpts(position='inside',formatter='{b}:{c}')
+        )
+        .set_global_opts(title_opts=opts.TitleOpts(title='整体转化率（%）'))
+    )
+    # 转存
+    make_snapshot(snapshot,c.render(),'转化率1.png')
 
 def order_creation(df):
     '''
@@ -67,38 +98,6 @@ def order_creation(df):
     plt.title('每日订单创建走势',fontsize=20)
     plt.savefig('每日订单创建数走势.jpg')
     plt.show()
-
-def Conversion_rates(df):
-    '''
-    目标：订单每个环节的转化转化率
-    :param df:
-    :return:
-    '''
-    rates = pd.Series({
-        '创建':df['订单创建时间'].count(),
-        '付款':df['订单付款时间'].count(),
-        '实际成交':df[df['买家实际支付金额']>0].shape[0],
-        '全额成交':df[df['买家实际支付金额']==df['总金额']].shape[0],
-    },name='订单量').to_frame()
-    # 绝对转化率=各项指标/订单创建数
-    rates['整体转化率']=rates['订单量'].apply(lambda x: round(x*100/rates.iloc[0,0],3))
-    # 相对转化率=各项指标/上一个流程的指标
-    # rates['相对转化率']=(rates/rates.shift())['订单量'].fillna(1)
-    print(f'\n{"-"*5}各环节绝对转化率(%){"-"*5}\n')
-    print(rates)
-
-    c=(
-        Funnel()
-        .add(
-            '转化率',
-            [list(z) for z in zip(rates.index,rates['整体转化率'])],
-            # 设置标签位置及数据展现形式
-            label_opts=opts.LabelOpts(position='inside',formatter='{b}:{c}')
-        )
-        .set_global_opts(title_opts=opts.TitleOpts(title='整体转化率（%）'))
-    )
-    # 转存
-    make_snapshot(snapshot,c.render(),'转化率1.png')
 
 def hot_sales(df):
     df=df[df['买家实际支付金额']>0]
@@ -130,25 +129,25 @@ def location_distribution(df):
     :param df:
     :return:
     '''
-    amount=df[df['买家实际支付金额'] > 0].groupby('收货地址')['买家实际支付金额'].count().sort_values(ascending=False).to_frame('实际成交数')
+    amount=df[df['买家实际支付金额'] > 0].groupby('收货地址')['买家实际支付金额'].sum().sort_values(ascending=False).to_frame('销售额')
 
     # 处理省份名称为pyecharts可识别的形式
     _x=[i.replace('省','').replace('自治区','') for i in amount.index]
     _x=[x if len(x)<4 else x[:2] for x in _x]
 
     # 计算最大值作为pyecharts色块分组中的最大值
-    max_=int(amount['实际成交数'].max())
+    max_=int(amount['销售额'].max())
     c=(
         Map()
         .add(
-            '订单数',[list(i) for i in zip(_x, amount['实际成交数'].to_list())],'china'
+            '订单数',[list(i) for i in zip(_x, amount['销售额'].to_list())],'china'
         )
         .set_global_opts(
-            title_opts=opts.TitleOpts(title='各地区实际成交订单数'),
+            title_opts=opts.TitleOpts(title='各地区销售额情况'),
             visualmap_opts=opts.VisualMapOpts(max_=max_,is_piecewise=True)
         )
     )
-    make_snapshot(snapshot,c.render(),'各地区实际成交订单数1.png')
+    make_snapshot(snapshot,c.render(),'各地区销售额情况1.png')
     # c.render('成交单数.html')
 
 def location_rates(df):
@@ -208,14 +207,14 @@ def main_func():
     # 热卖商品
     # hot_sales(df)
 
-    # 城市分布情况
-    # location_distribution(df)
+    # 各省市销售额分布情况
+    location_distribution(df)
 
     # 细分维度下的转化率情况
     # location_rates(df)
 
     # 多维度交叉分析：地理位置：北上广，时间：2月17-3月1日，销量前4产品
-    location_product_rates(df)
+    # location_product_rates(df)
 
 if __name__ == '__main__':
     main_func()
