@@ -151,7 +151,7 @@ def location_distribution(df):
     # c.render('成交单数.html')
 
 def location_rates(df):
-    # 找到所有实际成交或全额成交的所有行
+    # 找到有实际成交的所有行
     df['成交情况']=0
     df.loc[df[df['买家实际支付金额']>0].index.to_list(),'成交情况']=1
 
@@ -194,19 +194,22 @@ def location_product_rates(df):
 
 def main_func():
     df=open_file()
-    
+
     # 统计日维度下的总销售额情况
     # totle_sales_amount(df)
 
-     # 转化率情况
+    # <editor-fold desc="拆解结果指标部分">
+    # 总体转化率情况
     # Conversion_rates(df)
 
-    # 订单创建情况
+    # 总体订单创建情况
     # order_creation(df)
 
     # 热卖商品
     # hot_sales(df)
+    # </editor-fold>
 
+    # <editor-fold desc="多维度交叉分析">
     # 各省市销售额分布情况
     location_distribution(df)
 
@@ -215,6 +218,7 @@ def main_func():
 
     # 多维度交叉分析：地理位置：北上广，时间：2月17-3月1日，销量前4产品
     # location_product_rates(df)
+    # </editor-fold>
 
 if __name__ == '__main__':
     main_func()
